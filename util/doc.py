@@ -1,5 +1,5 @@
 import json
-from uril.file import yaml_files_content, list_all_yaml_files_in_directory
+from util.file import yaml_files_content, list_all_yaml_files_in_directory
 
 
 def to_doc_table(data, api_type="@apiParam"):
