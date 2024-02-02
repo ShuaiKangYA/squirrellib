@@ -1,5 +1,9 @@
 import json
+
 from util.file import yaml_files_content, list_all_yaml_files_in_directory
+import os
+
+from util.proc import run_command_in_directory
 
 
 def to_doc_table(data, api_type="@apiParam"):
@@ -11,6 +15,8 @@ def to_doc_table(data, api_type="@apiParam"):
     results = []  # 存储结果列表
 
     def traverse_dict(d, current_path=None):  # 遍历字典函数
+        if d is None:
+            return
         for key, value in d.items():  # 遍历字典的键值对
             v_type = value.get('type')  # 获取value的type属性
             add_data = {
@@ -73,6 +79,8 @@ def to_doc_default_example(d):
     :param d: (dict)
     :return: (dict)
     """
+    if d is None:
+        return
     result = {}
     for key, value in d.items():
         v_type = value.get('type')
@@ -117,10 +125,12 @@ def write_to_file(directory, write_file):
     write_cont = ''
     for content in files_content_list:
         uri = content.get("Uri")
+        group = content.get("Group")
         for detail in content.get("Details", []):
+            if detail is None:
+                continue
             desc = detail.get("Desc")
             method = detail.get("Method")
-            group = detail.get("group")
             write_cont += '"""\n'
             write_cont += f'@api {{{method}}} {uri} {desc} \n'
             write_cont += f'@apiName {desc} \n'
@@ -134,17 +144,24 @@ def write_to_file(directory, write_file):
                 write_cont += to_doc_example(req_params)
                 write_cont += '\n'
             if res_params:  # 响应格式化
-                write_cont += to_doc_table(req_params, "@apiSuccess")
+                write_cont += to_doc_table(res_params, "@apiSuccess")
                 write_cont += '\n'
                 write_cont += '@apiSuccessExample Success-Response:\n'
-                write_cont += to_doc_example(req_params)
+                write_cont += to_doc_example(res_params)
                 write_cont += '\n'
             write_cont += '"""\n'
     with open(write_file, "w") as f:
         f.write(write_cont)
 
 
-def write_doc_json(write_file,name="squirrellib",desc="REST API"):
+def write_doc_json(write_file, name="squirrellib", desc="REST API"):
+    """
+    生成doc.json文件
+    @param write_file: (str) 文件路径
+    @param name: (str) 文档名称
+    @param desc: (str) 文档描述
+    @return: Node
+    """
     data = {
         "name": name,
         "description": desc
@@ -152,3 +169,20 @@ def write_doc_json(write_file,name="squirrellib",desc="REST API"):
     with open(write_file, "w") as f:
         json.dump(data, f)
 
+
+apis_dir = os.getcwd() + '/apis'
+doc_dir = os.getcwd() + '/__apidoc'
+
+
+def generate_doc(apis_dir=apis_dir, doc_dir=doc_dir):
+    """
+    生成doc文件
+    """
+    # 目录创建
+    os.makedirs(doc_dir, exist_ok=True)
+    # 配置文件生成
+    write_doc_json(f'{doc_dir}/apidoc.json')
+    write_to_file(apis_dir, f'{doc_dir}/doc.py')
+    # 生成文档
+    cmd = f'apidoc -i {doc_dir} -o {doc_dir}'
+    run_command_in_directory(doc_dir, cmd)
