@@ -174,15 +174,15 @@ apis_dir = os.getcwd() + '/apis'
 doc_dir = os.getcwd() + '/__apidoc'
 
 
-def generate_doc(apis_dir=apis_dir, doc_dir=doc_dir):
+def generate_doc(apis_dir_path=apis_dir, doc_dir_path=doc_dir):
     """
     生成doc文件
     """
     # 目录创建
-    os.makedirs(doc_dir, exist_ok=True)
+    os.makedirs(doc_dir_path, exist_ok=True)
     # 配置文件生成
-    write_doc_json(f'{doc_dir}/apidoc.json')
-    write_to_file(apis_dir, f'{doc_dir}/doc.py')
+    write_doc_json(f'{doc_dir_path}/apidoc.json')
+    write_to_file(apis_dir_path, f'{doc_dir_path}/doc.py')
     # 生成文档
-    cmd = f'apidoc -i {doc_dir} -o {doc_dir}'
-    run_command_in_directory(doc_dir, cmd)
+    cmd = f'apidoc -i {doc_dir_path} -o {doc_dir_path}'
+    run_command_in_directory(doc_dir_path, cmd)
