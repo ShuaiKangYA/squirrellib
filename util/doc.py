@@ -69,6 +69,8 @@ def type_default_values(v_type):
     elif v_type == "bool":
         return False
     elif v_type == "number":
+        return 0.0
+    elif v_type == "integer":
         return 0
     return None
 
@@ -126,7 +128,10 @@ def write_to_file(directory, write_file):
     for content in files_content_list:
         uri = content.get("Uri")
         group = content.get("Group")
-        for detail in content.get("Details", []):
+        details = content.get("Details", [])
+        if details is None:
+            continue
+        for detail in details:
             if detail is None:
                 continue
             desc = detail.get("Desc")
