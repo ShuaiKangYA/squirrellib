@@ -24,7 +24,7 @@ def to_doc_table(data, api_type="@apiParam"):
                 "key": key,
                 "value": value,
                 "desc": value.get("desc"),
-                "type": v_type
+                "type": v_type,
             }
             if v_type == 'object':  # 如果type为object
                 new_path = current_path + (key,) if current_path is not None else (key,)  # 生成新的路径
@@ -47,7 +47,11 @@ def to_doc_table(data, api_type="@apiParam"):
 
     api_param = ''  # 初始化api_param为空字符串
     for item in results:  # 遍历结果列表
+        required = item.get("value", {}).get('required', False)  # 必填
+        default_value = item.get("value", {}).get('default', None)
         full_parent = '.'.join(item.get("path"))  # 将路径列表通过.连接成字符串
+        full_parent = full_parent if default_value is None else f'{full_parent}={default_value}'
+        full_parent = full_parent if required else f'[{full_parent}]'
         desc = item.get('desc')  # 获取描述
         data_type = item.get("type")  # 获取数据类型
         api_param += f'{api_type}  {{{data_type}}} {full_parent} {desc} \n'  # 拼接api_param字符串
@@ -159,17 +163,26 @@ def write_to_file(directory, write_file):
         f.write(write_cont)
 
 
-def write_doc_json(write_file, name="squirrellib", desc="REST API"):
+def write_doc_json(write_file, name="squirrellib", desc="REST API", template=None):
     """
     生成doc.json文件
     @param write_file: (str) 文件路径
     @param name: (str) 文档名称
     @param desc: (str) 文档描述
+    @param template: (dict) 必须包含showRequiredLabels、withCompare、withGenerator、aloneDisplay
     @return: Node
     """
+    if not template:
+        template = {
+            "showRequiredLabels": True,
+            "withCompare": True,
+            "withGenerator": True,
+            "aloneDisplay": False
+        }
     data = {
         "name": name,
-        "description": desc
+        "description": desc,
+        "template": template
     }
     with open(write_file, "w") as f:
         json.dump(data, f)
