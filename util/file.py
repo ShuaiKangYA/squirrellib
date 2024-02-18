@@ -2,6 +2,7 @@ import yaml
 import io
 import ruamel
 import os
+import configparser
 
 
 def read_yaml(file_path):
@@ -91,3 +92,21 @@ def yaml_files_content(yaml_files):
         content_list.append(read_data)  # 将当前YAML文件的内容添加到内容列表中
 
     return content_list  # 返回所有YAML文件的内容列表
+
+
+class ConfigManager:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.config = configparser.ConfigParser()
+        # 读取INI文件
+        self.config.read(self.filepath)
+
+    def set_value(self, section, option, value):
+        # 修改指定section和option的值
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, option, value)
+
+        # 将修改后的配置写回文件
+        with open(self.filepath, 'w') as configfile:
+            self.config.write(configfile)
