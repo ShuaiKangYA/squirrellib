@@ -65,18 +65,20 @@ def autogenerate(execution_directory):
     run_command_in_directory(execution_directory, 'alembic upgrade head')
 
 
-def whole_process(alembic_dir, alembic_ini_path, obj_path, sqlalchemy_addr):
-    init_alembic(alembic_dir, alembic_ini_path)
-    set_section_value_in_ini(alembic_ini_path, 'alembic', 'sqlalchemy.url', sqlalchemy_addr)
-    env_content_update(alembic_dir, obj_path)
+def whole_process(alembic_dir, obj_path, sqlalchemy_addr):
+    bic_dir = alembic_dir + "/alembic"
+    alembic_ini = alembic_dir + "/alembic.ini"
+    init_alembic(bic_dir, alembic_ini)
+    set_section_value_in_ini(alembic_ini, 'alembic', 'sqlalchemy.url', sqlalchemy_addr)
+    env_content_update(bic_dir, obj_path)
+    autogenerate(alembic_dir)
 
 
 if __name__ == '__main__':
-    init_dir = '/xxx/squirrellib/_alembic/alembic'
-    ini_path = '/xxx/squirrellib/_alembic/alembic.ini'
+    alem_dir = '/xxx/squirrellib/_alembic'
     sys_path = "/Users/wushuaikang/Desktop/code/squirrellib/squirrellib"
     sqlalchemy_url = 'postgresql+psycopg2://postgres:postgres@127.0.0.1/postgres'
-    whole_process(init_dir, ini_path, sys_path, sqlalchemy_url)
+    whole_process(alem_dir, sys_path, sqlalchemy_url)
 # 1.alembic init alembic  创建alembic.ini文件和alembic的文件夹 最后一个alembic为生成文件的名字
 # 2.修改alembic.ini文件 在文件中添加一行version_path_separator = sqlalchemy.url
 # 3.修改env.py文件 修改target_metadata=None,先导入自己的model文件将target_metadata修改为自己的models里的文件
